@@ -1,0 +1,16 @@
+{
+  "editor.tabSize": 2,
+  "editor.guides.highlightActiveIndentation": true,
+  "editor.guides.bracketPairsHorizontal": true,
+  "editor.guides.bracketPairs": true,
+  "editor.bracketPairColorization.enabled": true,
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/node_modules": true
+  }
+}
