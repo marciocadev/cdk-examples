@@ -2,11 +2,11 @@
 
 ## crud-typescript
 
-![crud-typescript](./lib/crud-typescript/cdk-examples-crud-tytpescript.png)
+![crud-typescript](./lib/crud-typescript/cdk-examples-crud-tytpescript.jpg)
 
 ## apigateway-dynamodb
 
-![apigateway-dynamodb](./lib/apigateway-dynamodb/cdk-examples-apigateway-dynamodb.png)
+![apigateway-dynamodb](./lib/apigateway-dynamodb/cdk-examples-apigateway-dynamodb.jpg)
 
 ## Stack001GO
 
