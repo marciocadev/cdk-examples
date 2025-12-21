@@ -1,3 +1,3 @@
-@ID = 2yabxlk0s8
+@ID = bul1v1khtl
 
-GET https://{{ID}}.execute-api.us-east-1.amazonaws.com/prod/album HTTP/1.1
+GET https://{{ID}}.execute-api.us-east-1.amazonaws.com/prod/all HTTP/1.1

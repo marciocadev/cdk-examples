@@ -1,3 +1,3 @@
-@ID = 2yabxlk0s8
+@ID = bul1v1khtl
 
 DELETE https://{{ID}}.execute-api.us-east-1.amazonaws.com/prod/artist/Dream Theater HTTP/1.1

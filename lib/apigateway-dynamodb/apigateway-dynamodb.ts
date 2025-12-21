@@ -52,8 +52,8 @@ export class ApiGatewayDynamoDBNestedStack extends NestedStack {
         selectionPattern: "400",
         responseTemplates: {
           'application/json': `{
-            "error": "Bad input!"
-          }`
+  "error": "Bad input!"
+}`
         }
       },
       {
@@ -61,8 +61,8 @@ export class ApiGatewayDynamoDBNestedStack extends NestedStack {
         selectionPattern: "5\\d{2}",
         responseTemplates: {
           'application/json': `{
-            "error": "Internal Service Error!"
-          }`
+  "error": "Internal Service Error!"
+}`
         }
       }
     ]
