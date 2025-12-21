@@ -1,16 +1,13 @@
-import * as cdk from 'aws-cdk-lib/core';
+import { Stack, StackProps } from 'aws-cdk-lib/core';
 import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import { CrudTSNestedStack } from './crud-typescript/crud-typescript';
+import { ApiGatewayDynamoDBNestedStack } from './apigateway-dynamodb/apigateway-dynamodb';
 
-export class CdkExamplesStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+export class CdkExamplesStack extends Stack {
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
-
-    // example resource
-    // const queue = new sqs.Queue(this, 'CdkExamplesQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    new CrudTSNestedStack(this, "CrudTypescript", props);
+    new ApiGatewayDynamoDBNestedStack(this, "ApiGatewayDynamoDB", props);
   }
 }

@@ -1,0 +1,5 @@
+@ID = jrb7wzqov0
+@Artist = Rush
+@Album = Moving Pictures
+
+DELETE https://{{ID}}.execute-api.us-east-1.amazonaws.com/prod/album/{{Artist}}/{{Album}} HTTP/1.1

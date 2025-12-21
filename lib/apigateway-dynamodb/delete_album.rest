@@ -1,0 +1,5 @@
+@ID = ixz9ss7kmk
+@artist=Dream Theater
+@album=Images and Words
+
+DELETE https://{{ID}}.execute-api.us-east-1.amazonaws.com/prod/album/{{artist}}/{{album}} HTTP/1.1

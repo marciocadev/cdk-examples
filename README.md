@@ -1,14 +1,37 @@
-# Welcome to your CDK TypeScript project
+# CDK-EXAMPLES
 
-This is a blank project for CDK development with TypeScript.
+## crud-typescript
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+![crud-typescript](./lib/crud-typescript/cdk-examples-crud-tytpescript.png)
 
-## Useful commands
+## apigateway-dynamodb
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `npx cdk deploy`  deploy this stack to your default AWS account/region
-* `npx cdk diff`    compare deployed stack with current state
-* `npx cdk synth`   emits the synthesized CloudFormation template
+![apigateway-dynamodb](./lib/apigateway-dynamodb/cdk-examples-apigateway-dynamodb.png)
+
+## Stack001GO
+
+* cd lib/Stack001GO
+* mkdir functions
+* mkdir functions/post
+* cd functions/post
+* go mod init post
+* go get github.com/aws/aws-sdk-go-v2/service/dynamodb
+* go get github.com/aws/aws-sdk-go-v2/config
+* go get github.com/aws/aws-lambda-go/lambda
+
+* x86_64: GOOS=linux GOARCH=amd64 go build -o bin/bootstrap
+* ARM64: GOOS=linux GOARCH=arm64 go build -o bin/bootstrap
+
+## Stack001RS
+* cd lib/Stack001RS
+* mkdir functions
+* cargo lambda new post
+* cargo add aws_config aws_sdk_dynamodb
+
+* cargo add serde --features derive
+* cargo add tracing
+* cargo add tracing-subscriber --features fmt
+* cd post
+* cargo lambda build --release --arm64
+
+## Stack001TS
