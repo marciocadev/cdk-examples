@@ -1,7 +1,7 @@
 import { NestedStack, NestedStackProps, RemovalPolicy } from "aws-cdk-lib";
 import { JsonSchema, JsonSchemaType, JsonSchemaVersion, LambdaIntegration, Model, RequestValidator, RestApi } from "aws-cdk-lib/aws-apigateway";
 import { AttributeType, TableV2 } from "aws-cdk-lib/aws-dynamodb";
-import { Architecture, Runtime } from "aws-cdk-lib/aws-lambda";
+import { Architecture, Runtime, Tracing } from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Construct } from "constructs";
 import { join } from "path";
@@ -27,7 +27,10 @@ export class CrudTSNestedStack extends NestedStack {
 
     // RestApi
     const api = new RestApi(this, "RestApiGateway", {
-      restApiName: "CrudTypescript"
+      restApiName: "CrudTypescript",
+      deployOptions: {
+        tracingEnabled: true,
+      },
     });
 
     const requestBodyValidator = new RequestValidator(this, "BodyValidator", {
@@ -51,6 +54,7 @@ export class CrudTSNestedStack extends NestedStack {
       runtime: Runtime.NODEJS_LATEST,
       architecture: Architecture.ARM_64,
       handler: "index.handler",
+      tracing: Tracing.ACTIVE,
       environment: {
         TABLE_NAME: table.tableName,
       },
@@ -100,6 +104,7 @@ export class CrudTSNestedStack extends NestedStack {
       runtime: Runtime.NODEJS_LATEST,
       architecture: Architecture.ARM_64,
       handler: "index.handler",
+      tracing: Tracing.ACTIVE,
       environment: {
         TABLE_NAME: table.tableName,
       }
@@ -121,6 +126,7 @@ export class CrudTSNestedStack extends NestedStack {
       runtime: Runtime.NODEJS_LATEST,
       architecture: Architecture.ARM_64,
       handler: "index.handler",
+      tracing: Tracing.ACTIVE,
       environment: {
         TABLE_NAME: table.tableName,
       }
@@ -142,6 +148,7 @@ export class CrudTSNestedStack extends NestedStack {
       runtime: Runtime.NODEJS_LATEST,
       architecture: Architecture.ARM_64,
       handler: "index.handler",
+      tracing: Tracing.ACTIVE,
       environment: {
         TABLE_NAME: table.tableName,
       },

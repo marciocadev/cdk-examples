@@ -1,10 +1,12 @@
 import { Logger } from "@aws-lambda-powertools/logger";
+import { Tracer } from "@aws-lambda-powertools/tracer";
 import { AttributeValue, DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { APIGatewayEvent, Context, APIGatewayProxyResultV2 } from "aws-lambda";
 
 const logger = new Logger({ serviceName: "postAlbum" });
-const client = new DynamoDBClient({ region: process.env.AWS_REGION });
+const tracer = new Tracer({ serviceName: "postAlbum" });
+const client = tracer.captureAWSv3Client(new DynamoDBClient({ region: process.env.AWS_REGION }));
 
 interface Artist {
   Artist: string;
@@ -20,6 +22,7 @@ export const handler = async (
   logger.setCorrelationId(event.requestContext.requestId);
 
   const payload = JSON.parse(event.body!);
+
   let artist: Artist = {
     Artist: payload.artist,
     Album: payload.album,
@@ -38,12 +41,20 @@ export const handler = async (
   logger.info("Payload: ", { artist: artist });
 
   try {
-    await client.send(
+    // const handlerPutItemSegment = tracer.getSegment()?.addNewSubsegment("PutItem Segment");
+    // handlerPutItemSegment && tracer.setSegment(handlerPutItemSegment);
+
+    const result = await client.send(
       new PutItemCommand({
         TableName: process.env.TABLE_NAME,
         Item: marshall(artist),
       })
     );
+    tracer.putMetadata("result", result);
+
+    // handlerPutItemSegment?.close();
+    // handlerPutItemSegment && tracer.setSegment(handlerPutItemSegment?.parent);
+
   } catch (err) {
     logger.error("Erro ao inserir o album", err as Error);
     throw err;

@@ -1,10 +1,12 @@
 import { Logger } from "@aws-lambda-powertools/logger";
+import { Tracer } from "@aws-lambda-powertools/tracer";
 import { DeleteItemCommand, DynamoDBClient, ReturnValue } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { APIGatewayEvent, APIGatewayProxyResultV2, Context } from "aws-lambda";
 
 const logger = new Logger({ serviceName: "deleteAlbum" });
-const client = new DynamoDBClient({ region: process.env.AWS_REGION });
+const tracer = new Tracer({ serviceName: "deleteAlbum" });
+const client = tracer.captureAWSv3Client(new DynamoDBClient({ region: process.env.AWS_REGION }));
 
 export const handler = async (
   event: APIGatewayEvent,
@@ -12,6 +14,7 @@ export const handler = async (
   Promise<APIGatewayProxyResultV2> => {
   logger.addContext(context);
   logger.setCorrelationId(event.requestContext.requestId);
+  tracer.putMetadata("event", event);
 
   const artist = decodeURIComponent(event.pathParameters!.artist!)
   const album = decodeURIComponent(event.pathParameters!.album!)

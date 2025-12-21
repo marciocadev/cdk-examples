@@ -1,7 +1,7 @@
 import { Aws, NestedStack, NestedStackProps, RemovalPolicy } from "aws-cdk-lib";
 import { AwsIntegration, IntegrationOptions, IntegrationResponse, JsonSchema, JsonSchemaType, JsonSchemaVersion, Model, RequestValidator, RestApi } from "aws-cdk-lib/aws-apigateway";
 import { AttributeType, TableV2 } from "aws-cdk-lib/aws-dynamodb";
-import { Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
+import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { Construct } from "constructs";
 
 export class ApiGatewayDynamoDBNestedStack extends NestedStack {
@@ -25,7 +25,10 @@ export class ApiGatewayDynamoDBNestedStack extends NestedStack {
 
     // RestApi
     const api = new RestApi(this, "RestApiGateway", {
-      restApiName: "ApiGatewayDynamoDB"
+      restApiName: "ApiGatewayDynamoDB",
+      deployOptions: {
+        tracingEnabled: true,
+      },
     });
 
     const requestBodyValidator = new RequestValidator(this, "BodyValidator", {
@@ -45,6 +48,15 @@ export class ApiGatewayDynamoDBNestedStack extends NestedStack {
       assumedBy: new ServicePrincipal('apigateway.amazonaws.com')
     });
     table.grantFullAccess(apiGatewayDynamoRole);
+
+    // Adiciona permissões X-Ray para rastreamento
+    apiGatewayDynamoRole.addToPolicy(new PolicyStatement({
+      actions: [
+        'xray:PutTraceSegments',
+        'xray:PutTelemetryRecords'
+      ],
+      resources: ['*']
+    }));
 
     const errorResponses: IntegrationResponse[] = [
       {

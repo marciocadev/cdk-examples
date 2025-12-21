@@ -1,15 +1,18 @@
 import { Logger } from "@aws-lambda-powertools/logger";
+import { Tracer } from "@aws-lambda-powertools/tracer";
 import { BatchWriteItemCommand, DynamoDBClient, QueryCommand } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { APIGatewayEvent, APIGatewayProxyResult, Context } from "aws-lambda";
 
 const logger = new Logger({ serviceName: "deleteArtist" });
-const client = new DynamoDBClient({ region: process.env.AWS_REGION });
+const tracer = new Tracer({ serviceName: "deleteArtist" });
+const client = tracer.captureAWSv3Client(new DynamoDBClient({ region: process.env.AWS_REGION }));
 
 export const handler = async (event: APIGatewayEvent, context: Context):
   Promise<APIGatewayProxyResult> => {
   logger.addContext(context);
   logger.setCorrelationId(event.requestContext.requestId);
+  tracer.putMetadata("event", event);
 
   const artist = decodeURIComponent(event.pathParameters!.artist!)
   const marshallArtist = marshall(artist)
@@ -40,7 +43,7 @@ export const handler = async (event: APIGatewayEvent, context: Context):
     for (let i = 0; i < itemsToDelete.length; i += BATCH_SIZE) {
       const batch = itemsToDelete.slice(i, i + BATCH_SIZE);
 
-      const deleteRequests = batch.map(item => ({
+      const deleteRequests = batch.map((item: any) => ({
         DeleteRequest: {
           Key: {
             Artist: item.Artist,
