@@ -211,5 +211,57 @@ export class ApiGatewayDynamoDBNestedStack extends NestedStack {
       },
     });
     // Delete Album
+
+    // GetAllAlbum
+    const integrationGetAllAlbumOptions: IntegrationOptions = {
+      credentialsRole: apiGatewayDynamoRole,
+      requestTemplates: {
+        'application/json': `{ "TableName": "${table.tableName}" }`
+      },
+      integrationResponses: [
+        {
+          statusCode: '200',
+          responseTemplates: {
+            'application/json': `[
+  #foreach($item in $input.path('$.Items'))
+  {
+    "artist": "$item.Artist.S",
+    "album": "$item.Album.S",
+    #if($item.Tracks && $item.Tracks.L)
+    "tracks": [
+      #foreach($track in $item.Tracks.L)
+      {
+        "title": "$track.M.Title.S",
+        "length": "$track.M.Length.S"
+      }#if($foreach.hasNext),#end
+      #end
+    ]
+    #else
+    "tracks": []
+    #end
+  }#if($foreach.hasNext),#end
+  #end
+]`
+          }
+        },
+        ...errorResponses,
+      ],
+    };
+
+    const scanIntegration = new AwsIntegration({
+      service: 'dynamodb',
+      region: `${Aws.REGION}`,
+      action: 'Scan',
+      options: integrationGetAllAlbumOptions
+    });
+
+    api.root.addResource("all").addMethod("GET", scanIntegration, {
+      methodResponses: [
+        { statusCode: '200' },
+        { statusCode: '400' },
+        { statusCode: '500' }
+      ],
+    });
+    // GetAllAlbum
   }
 }

@@ -149,7 +149,7 @@ export class CrudTSNestedStack extends NestedStack {
     table.grantReadData(getAllAlbumFunc);
     getAllAlbumFunc.logGroup.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
-    albumResource.addMethod("GET", new LambdaIntegration(getAllAlbumFunc));
+    api.root.addResource("all").addMethod("GET", new LambdaIntegration(getAllAlbumFunc));
     // GetAllAlbum Function
   }
 }
