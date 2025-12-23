@@ -220,7 +220,9 @@ export class Stack003NestedStack extends NestedStack {
         "integration.request.header.Content-Type": "'application/x-www-form-urlencoded'"
       },
       requestTemplates: {
-        "application/json": "Action=SendMessage&MessageBody={\"artist\": \"$util.escapeJavaScript($method.request.path.artist)\", \"album\": \"$util.escapeJavaScript($method.request.path.album)\"}"
+        "application/json": "Action=SendMessage&MessageBody={" +
+          "\"artist\": \"$util.escapeJavaScript($method.request.path.artist)\"," +
+          "\"album\": \"$util.escapeJavaScript($method.request.path.album)\"}"
       },
       integrationResponses: [
         {
