@@ -2,15 +2,20 @@
 
 ## Stack001
 Exemplo de integração entre o API Gateway (RestApi) e o DynamoDB utilizando o X-Ray para tracing
+
 ![Stack001](./lib/stack001/cdk-examples-Stack001.jpg)
+<hr />
 
 ## Stack002
 Exemplo de integração entre o API Gateway (RestApi) e Lambdas que persistem no DynamoDB utilizando o X-Ray  para tracing
+
 ![Stack002](./lib/stack002/cdk-examples-Stack002.jpg)
+<hr />
 
 ## Stack003
 Exemplo de integração entre o API Gateway (RestApi) e SQS com Lambdas que persistem no DynamoDB utilizando o X-Ray  para tracing
 
+![Stack003](./lib/stack003/cdk-examples-Stack003.jpg)
 
 <!-- ## Stack001GO
 
