@@ -1,4 +1,4 @@
-@ID = jr9ldhgise
+@ID = 904y0e2stg
 
 POST https://{{ID}}.execute-api.us-east-1.amazonaws.com/prod/album HTTP/1.1
 content-type: application/json

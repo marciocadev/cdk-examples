@@ -6,7 +6,7 @@ import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Construct } from "constructs";
 import { join } from "path";
 
-export class CrudTSNestedStack extends NestedStack {
+export class Stack002NestedStack extends NestedStack {
   constructor(scope: Construct, id: string, props?: NestedStackProps) {
     super(scope, id, props);
 
@@ -21,25 +21,25 @@ export class CrudTSNestedStack extends NestedStack {
         type: AttributeType.STRING,
       },
       removalPolicy: RemovalPolicy.DESTROY,
-      tableName: "CrudTypescript",
+      tableName: "Stack002DB",
     });
     // Table
 
     // RestApi
     const api = new RestApi(this, "RestApiGateway", {
-      restApiName: "CrudTypescript",
+      restApiName: "Stack002Api",
       deployOptions: {
         tracingEnabled: true,
       },
     });
 
     const requestBodyValidator = new RequestValidator(this, "BodyValidator", {
-      requestValidatorName: "CrudTypescriptBodyValidator",
+      requestValidatorName: "Stack002BodyValidator",
       restApi: api,
       validateRequestBody: true,
     });
     const requestParameterValidator = new RequestValidator(this, "ParameterValidator", {
-      requestValidatorName: "CrudTypescriptParameterValidator",
+      requestValidatorName: "Stack002ParameterValidator",
       restApi: api,
       validateRequestParameters: true,
     });
@@ -49,7 +49,7 @@ export class CrudTSNestedStack extends NestedStack {
 
     // PostAlbum Function
     const postAlbumFunc = new NodejsFunction(this, "PostAlbumFunc", {
-      functionName: "PostAlbum_CrudTypescript",
+      functionName: "Stack002PostAlbum",
       entry: join(__dirname, "functions", "post", "index.ts"),
       runtime: Runtime.NODEJS_LATEST,
       architecture: Architecture.ARM_64,
@@ -75,7 +75,7 @@ export class CrudTSNestedStack extends NestedStack {
             type: JsonSchemaType.OBJECT,
             properties: {
               Title: { type: JsonSchemaType.STRING },
-              Lenght: { type: JsonSchemaType.STRING }
+              Length: { type: JsonSchemaType.STRING }
             }
           }
         }
@@ -99,7 +99,7 @@ export class CrudTSNestedStack extends NestedStack {
 
     // DeleteAlbum Function
     const deleteAlbumFunc = new NodejsFunction(this, "DeleteAlbumFunc", {
-      functionName: "DeleteAlbum_CrudTypescript",
+      functionName: "Stack002DeleteAlbum",
       entry: join(__dirname, "functions", "delete", "album", "index.ts"),
       runtime: Runtime.NODEJS_LATEST,
       architecture: Architecture.ARM_64,
@@ -121,7 +121,7 @@ export class CrudTSNestedStack extends NestedStack {
 
     // DeleteArtist Function
     const deleteArtistFunc = new NodejsFunction(this, "DeleteArtistFunc", {
-      functionName: "DeleteArtist_CrudTypescript",
+      functionName: "Stack002DeleteArtist",
       entry: join(__dirname, "functions", "delete", "artist", "index.ts"),
       runtime: Runtime.NODEJS_LATEST,
       architecture: Architecture.ARM_64,
@@ -143,7 +143,7 @@ export class CrudTSNestedStack extends NestedStack {
 
     // GetAllAlbum Function
     const getAllAlbumFunc = new NodejsFunction(this, "GetAllAlbunsFunc", {
-      functionName: "GetAllAlbuns_CrudTypescript",
+      functionName: "Stack002GetAllAlbuns",
       entry: join(__dirname, "functions", "get", "all", "index.ts"),
       runtime: Runtime.NODEJS_LATEST,
       architecture: Architecture.ARM_64,

@@ -4,7 +4,7 @@ import { AttributeType, TableV2 } from "aws-cdk-lib/aws-dynamodb";
 import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { Construct } from "constructs";
 
-export class ApiGatewayDynamoDBNestedStack extends NestedStack {
+export class Stack001NestedStack extends NestedStack {
   constructor(scope: Construct, id: string, props?: NestedStackProps) {
     super(scope, id, props);
 
@@ -19,25 +19,25 @@ export class ApiGatewayDynamoDBNestedStack extends NestedStack {
         type: AttributeType.STRING,
       },
       removalPolicy: RemovalPolicy.DESTROY,
-      tableName: "ApiGatewayDynamoDB",
+      tableName: "Stack001DB",
     });
     // Table
 
     // RestApi
     const api = new RestApi(this, "RestApiGateway", {
-      restApiName: "ApiGatewayDynamoDB",
+      restApiName: "Stack001Api",
       deployOptions: {
         tracingEnabled: true,
       },
     });
 
     const requestBodyValidator = new RequestValidator(this, "BodyValidator", {
-      requestValidatorName: "ApiGatewayDynamoDBBodyValidator",
+      requestValidatorName: "Stack001BodyValidator",
       restApi: api,
       validateRequestBody: true,
     });
     const requestParameterValidator = new RequestValidator(this, "ParameterValidator", {
-      requestValidatorName: "CrudTypescriptParameterValidator",
+      requestValidatorName: "Stack001ParameterValidator",
       restApi: api,
       validateRequestParameters: true,
     });
@@ -77,7 +77,7 @@ export class ApiGatewayDynamoDBNestedStack extends NestedStack {
 }`
         }
       }
-    ]
+    ];
     // RestApi
 
     // PostAlbum
@@ -99,7 +99,7 @@ export class ApiGatewayDynamoDBNestedStack extends NestedStack {
           }
         }
       },
-      required: ["artist", "album"],
+      required: ["Artist", "Album"],
     };
 
     const requestModelPost: Model = new Model(this, "PostAlbumModel", {

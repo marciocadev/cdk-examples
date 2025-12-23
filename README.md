@@ -1,14 +1,18 @@
 # CDK-EXAMPLES
 
-## crud-typescript
+## Stack001
+Exemplo de integração entre o API Gateway (RestApi) e o DynamoDB utilizando o X-Ray para tracing
+![Stack001](./lib/stack001/cdk-examples-Stack001.jpg)
 
-![crud-typescript](./lib/crud-typescript/cdk-examples-crud-tytpescript.jpg)
+## Stack002
+Exemplo de integração entre o API Gateway (RestApi) e Lambdas que persistem no DynamoDB utilizando o X-Ray  para tracing
+![Stack002](./lib/stack002/cdk-examples-Stack002.jpg)
 
-## apigateway-dynamodb
+## Stack003
+Exemplo de integração entre o API Gateway (RestApi) e SQS com Lambdas que persistem no DynamoDB utilizando o X-Ray  para tracing
 
-![apigateway-dynamodb](./lib/apigateway-dynamodb/cdk-examples-apigateway-dynamodb.jpg)
 
-## Stack001GO
+<!-- ## Stack001GO
 
 * cd lib/Stack001GO
 * mkdir functions
@@ -34,4 +38,4 @@
 * cd post
 * cargo lambda build --release --arm64
 
-## Stack001TS
+## Stack001TS -->
