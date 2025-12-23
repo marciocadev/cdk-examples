@@ -1,7 +1,8 @@
 import { Aws, NestedStack, NestedStackProps, RemovalPolicy } from "aws-cdk-lib";
-import { AwsIntegration, IntegrationOptions, IntegrationResponse, JsonSchema, JsonSchemaType, JsonSchemaVersion, Model, RequestValidator, RestApi } from "aws-cdk-lib/aws-apigateway";
+import { AccessLogFormat, AwsIntegration, IntegrationOptions, IntegrationResponse, JsonSchema, JsonSchemaType, JsonSchemaVersion, LogGroupLogDestination, MethodLoggingLevel, Model, RequestValidator, RestApi } from "aws-cdk-lib/aws-apigateway";
 import { AttributeType, TableV2 } from "aws-cdk-lib/aws-dynamodb";
 import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
+import { LogGroup } from "aws-cdk-lib/aws-logs";
 import { Construct } from "constructs";
 
 export class Stack001NestedStack extends NestedStack {
@@ -24,10 +25,27 @@ export class Stack001NestedStack extends NestedStack {
     // Table
 
     // RestApi
+    const apiLogGroup = new LogGroup(this, "ApiLogGroup", {
+      logGroupName: "/aws/api-gateway/Stack001Api",
+      removalPolicy: RemovalPolicy.DESTROY,
+    });
     const api = new RestApi(this, "RestApiGateway", {
       restApiName: "Stack001Api",
       deployOptions: {
         tracingEnabled: true,
+        loggingLevel: MethodLoggingLevel.INFO,
+        accessLogDestination: new LogGroupLogDestination(apiLogGroup),
+        accessLogFormat: AccessLogFormat.jsonWithStandardFields({
+          ip: true,
+          caller: true,
+          user: true,
+          requestTime: true,
+          httpMethod: true,
+          protocol: true,
+          resourcePath: true,
+          status: true,
+          responseLength: true,
+        }),
       },
     });
 
@@ -86,20 +104,20 @@ export class Stack001NestedStack extends NestedStack {
       type: JsonSchemaType.OBJECT,
       schema: JsonSchemaVersion.DRAFT4,
       properties: {
-        Artist: { type: JsonSchemaType.STRING },
-        Album: { type: JsonSchemaType.STRING },
-        Tracks: {
+        artist: { type: JsonSchemaType.STRING },
+        album: { type: JsonSchemaType.STRING },
+        tracks: {
           type: JsonSchemaType.ARRAY,
           items: {
             type: JsonSchemaType.OBJECT,
             properties: {
-              Title: { type: JsonSchemaType.STRING },
-              Lenght: { type: JsonSchemaType.STRING }
+              title: { type: JsonSchemaType.STRING },
+              lenght: { type: JsonSchemaType.STRING }
             }
           }
         }
       },
-      required: ["Artist", "Album"],
+      required: ["artist", "album"],
     };
 
     const requestModelPost: Model = new Model(this, "PostAlbumModel", {
