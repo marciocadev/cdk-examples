@@ -1,8 +1,9 @@
 import { NestedStack, NestedStackProps, RemovalPolicy } from "aws-cdk-lib";
-import { JsonSchema, JsonSchemaType, JsonSchemaVersion, LambdaIntegration, Model, RequestValidator, RestApi } from "aws-cdk-lib/aws-apigateway";
+import { AccessLogFormat, JsonSchema, JsonSchemaType, JsonSchemaVersion, LambdaIntegration, LogGroupLogDestination, MethodLoggingLevel, Model, RequestValidator, RestApi } from "aws-cdk-lib/aws-apigateway";
 import { AttributeType, TableV2 } from "aws-cdk-lib/aws-dynamodb";
 import { Architecture, Runtime, Tracing } from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
+import { LogGroup } from "aws-cdk-lib/aws-logs";
 import { Construct } from "constructs";
 import { join } from "path";
 
@@ -26,10 +27,27 @@ export class Stack002NestedStack extends NestedStack {
     // Table
 
     // RestApi
+    const apiLogGroup = new LogGroup(this, "ApiLogGroup", {
+      logGroupName: "/aws/api-gateway/Stack002Api",
+      removalPolicy: RemovalPolicy.DESTROY,
+    });
     const api = new RestApi(this, "RestApiGateway", {
       restApiName: "Stack002Api",
       deployOptions: {
         tracingEnabled: true,
+        loggingLevel: MethodLoggingLevel.INFO,
+        accessLogDestination: new LogGroupLogDestination(apiLogGroup),
+        accessLogFormat: AccessLogFormat.jsonWithStandardFields({
+          ip: true,
+          caller: true,
+          user: true,
+          requestTime: true,
+          httpMethod: true,
+          protocol: true,
+          resourcePath: true,
+          status: true,
+          responseLength: true,
+        }),
       },
     });
 
