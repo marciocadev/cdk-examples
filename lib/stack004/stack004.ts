@@ -1,16 +1,18 @@
 import { Aws, NestedStack, NestedStackProps, RemovalPolicy } from "aws-cdk-lib";
 import { AccessLogFormat, AwsIntegration, IntegrationOptions, IntegrationResponse, JsonSchema, JsonSchemaType, JsonSchemaVersion, LogGroupLogDestination, MethodLoggingLevel, Model, RequestValidator, RestApi } from "aws-cdk-lib/aws-apigateway";
 import { AttributeType, TableV2 } from "aws-cdk-lib/aws-dynamodb";
-import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
+import { Effect, PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { Architecture, Runtime, Tracing } from "aws-cdk-lib/aws-lambda";
 import { SqsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { LogGroup } from "aws-cdk-lib/aws-logs";
+import { Topic, SubscriptionFilter, TracingConfig } from "aws-cdk-lib/aws-sns";
+import { SqsSubscription } from "aws-cdk-lib/aws-sns-subscriptions";
 import { Queue } from "aws-cdk-lib/aws-sqs";
 import { Construct } from "constructs";
 import { join } from "path";
 
-export class Stack003NestedStack extends NestedStack {
+export class Stack004NestedStack extends NestedStack {
   constructor(scope: Construct, id: string, props?: NestedStackProps) {
     super(scope, id, props);
 
@@ -25,17 +27,17 @@ export class Stack003NestedStack extends NestedStack {
         type: AttributeType.STRING,
       },
       removalPolicy: RemovalPolicy.DESTROY,
-      tableName: "Stack003DB",
+      tableName: "Stack004DB",
     });
     // Table
 
     // RestApi
     const apiLogGroup = new LogGroup(this, "ApiLogGroup", {
-      logGroupName: "/aws/api-gateway/Stack003Api",
+      logGroupName: "/aws/api-gateway/Stack004Api",
       removalPolicy: RemovalPolicy.DESTROY,
     });
     const api = new RestApi(this, "RestApiGateway", {
-      restApiName: "Stack003Api",
+      restApiName: "Stack004Api",
       deployOptions: {
         tracingEnabled: true,
         loggingLevel: MethodLoggingLevel.INFO,
@@ -55,24 +57,24 @@ export class Stack003NestedStack extends NestedStack {
     });
 
     const requestBodyValidator = new RequestValidator(this, "BodyValidator", {
-      requestValidatorName: "Stack003BodyValidator",
+      requestValidatorName: "Stack004BodyValidator",
       restApi: api,
       validateRequestBody: true,
     });
     const requestParameterValidator = new RequestValidator(this, "ParameterValidator", {
-      requestValidatorName: "Stack003ParameterValidator",
+      requestValidatorName: "Stack004ParameterValidator",
       restApi: api,
       validateRequestParameters: true,
     });
 
     const albumResource = api.root.addResource("album");
 
-    const apiGatewaySQSRole = new Role(this, 'ApiGatewaySQSRole', {
+    const apiGatewaySNSRole = new Role(this, 'ApiGatewaySNSRole', {
       assumedBy: new ServicePrincipal('apigateway.amazonaws.com')
     });
 
     // Adiciona permissões X-Ray para rastreamento
-    apiGatewaySQSRole.addToPolicy(new PolicyStatement({
+    apiGatewaySNSRole.addToPolicy(new PolicyStatement({
       actions: [
         'xray:PutTraceSegments',
         'xray:PutTelemetryRecords'
@@ -102,9 +104,35 @@ export class Stack003NestedStack extends NestedStack {
     ];
     // RestApi
 
-    // PostAlbum Fuction
+    // Topic
+    const topic = new Topic(this, "Topic", {
+      topicName: "Stack004Topic",
+      tracingConfig: TracingConfig.ACTIVE,
+    });
+    topic.grantPublish(apiGatewaySNSRole);
+    const snsRole = new Role(this, 'snsRole', {
+      assumedBy: new ServicePrincipal('sns.amazonaws.com')
+    });
+    snsRole.addToPolicy(new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        "xray:PutTraceSegments",
+        "xray:PutTelemetryRecords",
+        "xray:GetSamplingRules",
+        "xray:GetSamplingTargets"
+      ],
+      resources: ['*'],
+      conditions: {
+        StringEquals: {
+          "aws:SourceArn": topic.topicArn
+        }
+      }
+    }));
+    // Topic
+
+    // PostAlbum Function
     const postAlbumFunc = new NodejsFunction(this, "PostAlbumFunc", {
-      functionName: "Stack003PostAlbum",
+      functionName: "Stack004PostAlbum",
       entry: join(__dirname, "functions", "post", "index.ts"),
       runtime: Runtime.NODEJS_LATEST,
       architecture: Architecture.ARM_64,
@@ -116,23 +144,35 @@ export class Stack003NestedStack extends NestedStack {
     });
     table.grantWriteData(postAlbumFunc);
     postAlbumFunc.logGroup.applyRemovalPolicy(RemovalPolicy.DESTROY);
-    // PostAlbum Fuction
+    // PostAlbum Function
 
-    // PostAlbum Queue
+    // postAlbum Queue
     const deadLetterQueuePostAlbum = new Queue(this, "DeadLetterPostAlbum", {
-      queueName: "Stack003DeadLetterPostAlbum"
+      queueName: "Stack004DeadLetterPostAlbum"
     });
 
     const queuePostAlbum = new Queue(this, "QueuePostAlbum", {
-      queueName: "Stack003QueuePostAlbum",
+      queueName: "Stack004QueuePostAlbum",
       deadLetterQueue: {
         queue: deadLetterQueuePostAlbum,
         maxReceiveCount: 3
       }
     });
-    queuePostAlbum.grantSendMessages(apiGatewaySQSRole);
     queuePostAlbum.grantConsumeMessages(postAlbumFunc);
     postAlbumFunc.addEventSource(new SqsEventSource(queuePostAlbum));
+
+    topic.addSubscription(new SqsSubscription(queuePostAlbum, {
+      filterPolicy: {
+        "http": SubscriptionFilter.stringFilter({
+          allowlist: ["PostAlbum"]
+        })
+      },
+      // filterPolicyWithMessageBody: {
+      //   artist: FilterOrPolicy.filter(SubscriptionFilter.stringFilter({
+      //     allowlist: ["Dream Theater"]
+      //   }))
+      // }
+    }));
 
     const requestSchemaPost: JsonSchema = {
       title: "PostAlbumRequest",
@@ -162,31 +202,36 @@ export class Stack003NestedStack extends NestedStack {
     });
 
     const integrationPostAlbumOptions: IntegrationOptions = {
-      credentialsRole: apiGatewaySQSRole,
+      credentialsRole: apiGatewaySNSRole,
       requestParameters: {
         "integration.request.header.Content-Type": "'application/x-www-form-urlencoded'"
       },
       requestTemplates: {
-        "application/json": "Action=SendMessage&MessageBody=$input.body"
+        "application/json": "Action=Publish&" +
+          "TargetArn=$util.urlEncode('" + topic.topicArn + "')&" +
+          "Message=$input.body&" +
+          "MessageAttributes.entry.1.Name=http&" +
+          "MessageAttributes.entry.1.Value.DataType=String&" +
+          "MessageAttributes.entry.1.Value.StringValue=PostAlbum"
       },
       integrationResponses: [
         {
           statusCode: "200",
           selectionPattern: "200",
           responseTemplates: {
-            "application/json": "{ messageId: $input.path('$.SendMessageResponse.SendMessageResult.MessageId')}"
+            "application/json": "{ messageId: $input.path('$.PublishResponse.PublishResult.MessageId')}"
           },
         },
         ...errorResponses
       ],
-    }
+    };
 
     const putItemIntegration = new AwsIntegration({
-      service: 'sqs',
+      service: "sns",
       region: `${Aws.REGION}`,
-      path: `${Aws.ACCOUNT_ID}/${queuePostAlbum.queueName}`,
+      path: `${Aws.ACCOUNT_ID}/${topic.topicName}`,
       integrationHttpMethod: "POST",
-      options: integrationPostAlbumOptions
+      options: integrationPostAlbumOptions,
     });
 
     albumResource.addMethod("POST", putItemIntegration, {
@@ -202,7 +247,7 @@ export class Stack003NestedStack extends NestedStack {
 
     // DeleteAlbum Function
     const deleteAlbumFunc = new NodejsFunction(this, "DeleteAlbumFunc", {
-      functionName: "Stack003DeleteAlbum",
+      functionName: "Stack004DeleteAlbum",
       entry: join(__dirname, "functions", "delete", "album", "index.ts"),
       runtime: Runtime.NODEJS_LATEST,
       architecture: Architecture.ARM_64,
@@ -218,37 +263,47 @@ export class Stack003NestedStack extends NestedStack {
 
     // DeleteAlbum Queue
     const deadLetterQueueDeleteAlbum = new Queue(this, "DeadLetterDeleteAlbum", {
-      queueName: "Stack003DeadLetterDeleteAlbum"
+      queueName: "Stack004DeadLetterDeleteAlbum"
     });
-
     const queueDeleteAlbum = new Queue(this, "QueueDeleteAlbum", {
-      queueName: "Stack003QueueDeleteAlbum",
+      queueName: "Stack004QueueDeleteAlbum",
       deadLetterQueue: {
         queue: deadLetterQueueDeleteAlbum,
         maxReceiveCount: 3
       }
     });
-    queueDeleteAlbum.grantSendMessages(apiGatewaySQSRole);
     queueDeleteAlbum.grantConsumeMessages(deleteAlbumFunc);
     deleteAlbumFunc.addEventSource(new SqsEventSource(queueDeleteAlbum));
 
+    topic.addSubscription(new SqsSubscription(queueDeleteAlbum, {
+      filterPolicy: {
+        "http": SubscriptionFilter.stringFilter({
+          allowlist: ["DeleteAlbum"]
+        })
+      },
+    }));
+
     const integrationDeleteAlbumOptions: IntegrationOptions = {
-      credentialsRole: apiGatewaySQSRole,
+      credentialsRole: apiGatewaySNSRole,
       requestParameters: {
         "integration.request.header.Content-Type": "'application/x-www-form-urlencoded'"
       },
       requestTemplates: {
-        "application/json": "Action=SendMessage&" +
-          "MessageBody={" +
+        "application/json": "Action=Publish&" +
+          "TargetArn=$util.urlEncode('" + topic.topicArn + "')&" +
+          "Message={" +
           "\"artist\": \"$util.escapeJavaScript($method.request.path.artist)\"," +
-          "\"album\": \"$util.escapeJavaScript($method.request.path.album)\"}"
+          "\"album\": \"$util.escapeJavaScript($method.request.path.album)\"}&" +
+          "MessageAttributes.entry.1.Name=http&" +
+          "MessageAttributes.entry.1.Value.DataType=String&" +
+          "MessageAttributes.entry.1.Value.StringValue=DeleteAlbum"
       },
       integrationResponses: [
         {
           statusCode: "200",
           selectionPattern: "200",
           responseTemplates: {
-            "application/json": "{messageId: $input.path('$.SendMessageResponse.SendMessageResult.MessageId')}"
+            "application/json": "{ messageId: $input.path('$.PublishResponse.PublishResult.MessageId')}"
           },
         },
         ...errorResponses,
@@ -256,9 +311,9 @@ export class Stack003NestedStack extends NestedStack {
     };
 
     const deleteItemIntegration = new AwsIntegration({
-      service: 'sqs',
+      service: 'sns',
       region: `${Aws.REGION}`,
-      path: `${Aws.ACCOUNT_ID}/${queueDeleteAlbum.queueName}`,
+      path: `${Aws.ACCOUNT_ID}/${topic.topicName}`,
       integrationHttpMethod: "POST",
       options: integrationDeleteAlbumOptions
     });
