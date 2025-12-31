@@ -110,6 +110,10 @@ export class Stack003NestedStack extends NestedStack {
       architecture: Architecture.ARM_64,
       handler: "index.handler",
       tracing: Tracing.ACTIVE,
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
       environment: {
         TABLE_NAME: table.tableName,
       },
@@ -208,6 +212,10 @@ export class Stack003NestedStack extends NestedStack {
       architecture: Architecture.ARM_64,
       handler: "index.handler",
       tracing: Tracing.ACTIVE,
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
       environment: {
         TABLE_NAME: table.tableName,
       },

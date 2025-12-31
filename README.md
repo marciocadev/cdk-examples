@@ -47,6 +47,8 @@ cdk-examples/
 │   ├── stack002/                 # Stack 2: API Gateway → Lambda → DynamoDB
 │   ├── stack003/                 # Stack 3: API Gateway → SQS → Lambda → DynamoDB
 │   ├── stack004/                 # Stack 4: API Gateway → SNS → SQS → Lambda → DynamoDB
+│   ├── stack005/                 # Stack 5: API Gateway → Lambda → Aurora PostgreSQL
+│   ├── stack006/                 # Stack 6: API Gateway com Cognito OAuth2
 │   └── payloads/                 # Arquivos REST para testes
 ├── test/                         # Testes unitários
 └── cdk.json                      # Configuração do CDK
@@ -139,6 +141,90 @@ Padrão pub/sub usando SNS como message broker com filtros de subscription.
 
 ---
 
+### Stack005: API Gateway → Lambda → Aurora PostgreSQL
+
+Integração com Amazon Aurora PostgreSQL Serverless v2 usando RDS Data API.
+
+**Características:**
+- Amazon Aurora PostgreSQL Serverless v2 (versão 17.6)
+- VPC configurada para isolamento de rede
+- RDS Data API para acesso sem gerenciar conexões
+- Cluster com writer e reader instances
+- Auto-scaling de 0 a 5 ACUs (Aurora Capacity Units)
+- Trigger function que cria tabelas automaticamente após o deploy
+- Validação de request body com JSON Schema
+- Tracing com X-Ray habilitado
+- Logs de acesso no CloudWatch Logs
+
+**Estrutura do Banco de Dados:**
+- **accounts**: Tabela de usuários (user_id, username, password, email, created_at, last_login)
+- **roles**: Tabela de roles (role_id, role_name)
+- **account_roles**: Tabela de relacionamento muitos-para-muitos entre accounts e roles
+
+**Endpoints:**
+- `POST /` - Criar novo usuário no banco de dados
+
+**Payload do POST:**
+```json
+{
+  "username": "usuario123",
+  "password": "senha123",
+  "email": "usuario@example.com"
+}
+```
+
+**Campos obrigatórios:**
+- `username` (string) - Nome de usuário único
+- `password` (string) - Senha do usuário
+
+**Campos opcionais:**
+- `email` (string) - Email do usuário (único)
+
+**Trigger Function:**
+- Executada automaticamente após o deploy do cluster
+- Cria as tabelas `accounts`, `roles` e `account_roles` se não existirem
+- Usa CDK Triggers para execução após a criação do recurso
+
+![Stack005](./lib/stack005/cdk-examples-Stack005.jpg)
+---
+
+### Stack006: API Gateway com Cognito OAuth2
+
+Autenticação e autorização usando Amazon Cognito User Pool com OAuth2 Client Credentials flow.
+
+**Características:**
+- Autenticação via Amazon Cognito User Pool
+- Autorização baseada em OAuth2 scopes (read/write)
+- Dois clientes OAuth2 configurados:
+  - **FullAccess**: Acesso a scopes `read` e `write`
+  - **ReadOnly**: Acesso apenas ao scope `read`
+- Cognito User Pool Authorizer no API Gateway
+- CORS habilitado para todos os origens
+- Throttling configurado (10 req/s, burst 20)
+- Token de acesso válido por 60 minutos
+- Token de refresh válido por 1 dia
+
+**Endpoints:**
+- `GET /read` - Requer scope `read` (acessível por ambos os clientes)
+- `POST /write` - Requer scope `write` (acessível apenas pelo cliente FullAccess)
+
+**OAuth2 Scopes:**
+- `prod/read` - Permissão de leitura
+- `prod/write` - Permissão de escrita
+
+**Fluxo de Autenticação:**
+1. Obter token OAuth2 via endpoint do Cognito usando client credentials
+2. Usar o token no header `Authorization: Bearer {token}` nas requisições
+3. API Gateway valida o token e verifica os scopes necessários
+
+**Arquivos de Exemplo:**
+- `fullAccess.rest` - Exemplo com cliente de acesso completo
+- `readAccess.rest` - Exemplo com cliente de apenas leitura
+
+![Stack006](./lib/stack006/cdk-examples-Stack006.jpg)
+
+---
+
 ## 💻 Como Usar
 
 ### 1. Configurar a Stack Ativa
@@ -221,9 +307,15 @@ Os payloads de exemplo estão disponíveis em `lib/payloads/`:
 - **Lambda** - Computação serverless
 - **SQS** - Fila de mensagens
 - **SNS** - Serviço de notificações/pub-sub
+- **Amazon Aurora PostgreSQL** - Banco de dados relacional serverless
+- **RDS Data API** - API para acesso ao banco sem gerenciar conexões
+- **VPC** - Rede virtual privada
+- **Amazon Cognito** - Autenticação e autorização
+- **OAuth2** - Protocolo de autorização
 - **X-Ray** - Tracing distribuído
 - **CloudWatch Logs** - Logs centralizados
 - **AWS Lambda Powertools** - Observabilidade e logging
+- **CDK Triggers** - Execução de funções após criação de recursos
 
 ## 📚 Comandos Úteis
 

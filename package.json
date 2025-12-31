@@ -26,12 +26,15 @@
     "@aws-lambda-powertools/tracer": "^2.30.0",
     "@aws-sdk/client-appconfigdata": "^3.948.0",
     "@aws-sdk/client-dynamodb": "^3.948.0",
+    "@aws-sdk/client-rds-data": "^3.958.0",
     "@aws-sdk/client-secrets-manager": "^3.950.0",
     "@aws-sdk/client-ssm": "^3.948.0",
     "@aws-sdk/util-dynamodb": "^3.948.0",
     "@types/aws-lambda": "^8.10.159",
     "aws-cdk-lib": "2.232.1",
     "constructs": "^10.0.0",
-    "esbuild": "^0.27.1"
+    "esbuild": "^0.27.1",
+    "source-map-support": "^0.5.21",
+    "uuid": "^13.0.0"
   }
 }

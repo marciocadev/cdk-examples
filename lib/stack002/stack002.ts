@@ -73,6 +73,10 @@ export class Stack002NestedStack extends NestedStack {
       architecture: Architecture.ARM_64,
       handler: "index.handler",
       tracing: Tracing.ACTIVE,
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
       environment: {
         TABLE_NAME: table.tableName,
       },
@@ -85,15 +89,15 @@ export class Stack002NestedStack extends NestedStack {
       type: JsonSchemaType.OBJECT,
       schema: JsonSchemaVersion.DRAFT4,
       properties: {
-        Artist: { type: JsonSchemaType.STRING },
-        Album: { type: JsonSchemaType.STRING },
-        Tracks: {
+        artist: { type: JsonSchemaType.STRING },
+        album: { type: JsonSchemaType.STRING },
+        tracks: {
           type: JsonSchemaType.ARRAY,
           items: {
             type: JsonSchemaType.OBJECT,
             properties: {
-              Title: { type: JsonSchemaType.STRING },
-              Length: { type: JsonSchemaType.STRING }
+              title: { type: JsonSchemaType.STRING },
+              length: { type: JsonSchemaType.STRING }
             }
           }
         }
@@ -123,6 +127,10 @@ export class Stack002NestedStack extends NestedStack {
       architecture: Architecture.ARM_64,
       handler: "index.handler",
       tracing: Tracing.ACTIVE,
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
       environment: {
         TABLE_NAME: table.tableName,
       }
@@ -145,6 +153,10 @@ export class Stack002NestedStack extends NestedStack {
       architecture: Architecture.ARM_64,
       handler: "index.handler",
       tracing: Tracing.ACTIVE,
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
       environment: {
         TABLE_NAME: table.tableName,
       }
@@ -167,6 +179,10 @@ export class Stack002NestedStack extends NestedStack {
       architecture: Architecture.ARM_64,
       handler: "index.handler",
       tracing: Tracing.ACTIVE,
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
       environment: {
         TABLE_NAME: table.tableName,
       },

@@ -1,0 +1,28 @@
+@FullAccessClientId=2lbo36g1thrr12g1h4c28objfn
+@FullAccessClientSecret=11n82gpnp5g64pa36vh35av5mass76ncl5ki854oqs2pihb90vqh
+@CognitoDomain=stack006-user-pool-domain
+@apigatewayid=xjkzru5hw2
+@stage=prod
+
+### Get Token
+# @name result
+POST https://{{CognitoDomain}}.auth.us-east-1.amazoncognito.com/oauth2/token
+Content-Type: application/x-www-form-urlencoded
+Authorization: Basic {{FullAccessClientId}}:{{FullAccessClientSecret}}
+
+grant_type=client_credentials
+###
+@authToken={{result.response.body.access_token}}
+### Get Token
+
+### Get
+@endpointRead=read
+GET https://{{apigatewayid}}.execute-api.us-east-1.amazonaws.com/{{stage}}/{{endpointRead}}
+Authorization: Bearer {{authToken}}
+###
+
+### Post
+@endpointPost=write
+POST https://{{apigatewayid}}.execute-api.us-east-1.amazonaws.com/{{stage}}/{{endpointPost}} HTTP/1.1
+Authorization: Bearer {{authToken}}
+###
